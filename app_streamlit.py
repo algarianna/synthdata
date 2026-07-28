@@ -1,20 +1,20 @@
 """
-Minimal Streamlit app to upload a dataset, choose numeric columns and run the Gaussian copula synthesis.
-Run with: streamlit run app_streamlit.py
+Minimal Streamlit app to let users upload their dataset, preview, pick numeric columns,
+and download the processed CSV/parquet. Run with: streamlit run streamlit_upload_app.py
 """
 import streamlit as st
+import pandas as pd
+from upload_dataset import load_dataset, select_columns, summarize_dataframe, save_dataset
 import io
-from synthdata.data_io import load_dataset, select_columns, summarize_dataframe
-from synthdata.gaussian_copula import synthesize_and_evaluate
-from synthdata.metrics import plot_corr_matrices
 
-st.title("synthdata — upload and generate synthetic data (Gaussian copula)")
-
+st.title("Upload and prepare dataset for synthetic generation")
 uploaded = st.file_uploader("Upload CSV / Excel / Parquet / JSON", type=["csv","tsv","txt","xls","xlsx","parquet","json"])
-if uploaded is None:
-    st.info("Upload a dataset to begin.")
-else:
+
+if uploaded is not None:
+    # streamlit gives a file-like object
+    st.info("Reading file...")
     try:
+        # Let helper detect type
         df = load_dataset(uploaded, file_type=None)
     except Exception as e:
         st.error(f"Failed to read file: {e}")
@@ -33,16 +33,20 @@ else:
 
     selected = st.multiselect("Select columns to keep for synthesis (numeric only recommended):", numeric_cols, default=numeric_cols[:6])
 
-    if st.button("Generate synthetic data"):
+    if st.button("Prepare selection"):
         df_sel, chosen_cols = select_columns(df, include=selected, numeric_only=True)
-        with st.spinner("Fitting Gaussian copula and sampling..."):
-            synthetic, report, percol, univ = synthesize_and_evaluate(df_sel, n_samples=len(df_sel), random_state=42)
-        st.success("Synthetic data generated")
-        st.write("Report:")
-        st.json(report)
-        st.write("Top columns by KS (worst matches):")
-        st.dataframe(univ.sort_values("ks", ascending=False).head(10))
-        st.download_button("Download synthetic CSV", synthetic.to_csv(index=False).encode("utf-8"), file_name="synthetic.csv", mime="text/csv")
+        st.write("Selection shape:", df_sel.shape)
+        st.dataframe(df_sel.head(20))
 
-        # show correlation matrices (small inline plotting)
-        st.pyplot(plot_corr_matrices(df_sel, synthetic, method="pearson", title_suffix=" (Streamlit)"))
+        # Offer download
+        fmt = st.selectbox("Download format", ["csv","parquet"])
+        if st.button("Download prepared dataset"):
+            buf = io.BytesIO()
+            if fmt == "csv":
+                buf2 = io.StringIO()
+                df_sel.to_csv(buf2, index=False)
+                b = buf2.getvalue().encode("utf-8")
+                st.download_button("Download CSV", b, file_name="prepared.csv", mime="text/csv")
+            else:
+                df_sel.to_parquet(buf, index=False)
+                st.download_button("Download Parquet", buf.getvalue(), file_name="prepared.parquet", mime="application/octet-stream")
