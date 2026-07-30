@@ -6,7 +6,8 @@ from ucimlrepo import fetch_ucirepo
 from synthdata.data_io import load_dataset, select_columns
 from synthdata.gaussian_copula import synthesize_and_evaluate
 from synthdata.metrics import plot_corr_matrices
-
+import matplotlib
+from tkinter import *
 
 def main():
     # Fetch the same wine dataset you used
@@ -25,6 +26,10 @@ def main():
 
     synthetic_gc, report_gc, percol_scores_gc, univ_table = synthesize_and_evaluate(df, n_samples=len(df), random_state=123)
 
+    # Save the synthetic dataset
+    synthetic_gc.to_csv("output/synthetic_wine.csv", index=False)
+    print("Synthetic dataset saved to synthetic_wine.csv")
+
     print("Report:")
     for k, v in report_gc.items():
         print(k, ":", v)
@@ -37,4 +42,6 @@ def main():
 
 
 if __name__ == "__main__":
+    matplotlib.use('TkAgg')
     main()
+    
