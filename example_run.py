@@ -3,7 +3,10 @@ Small script that ties everything together and demonstrates running the pipeline
 Run: python example_run.py
 """
 from ucimlrepo import fetch_ucirepo
-from synthdata import load_dataset, select_columns, synthesize_and_evaluate, plot_corr_matrices
+from synthdata.data_io import load_dataset, select_columns
+from synthdata.gaussian_copula import synthesize_and_evaluate
+from synthdata.metrics import plot_corr_matrices
+
 
 def main():
     # Fetch the same wine dataset you used
