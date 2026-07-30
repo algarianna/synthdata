@@ -3,7 +3,8 @@
 synthdata is a small package for generating synthetic tabular data using a Gaussian copula, with a set of evaluation metrics (KS/Wasserstein, correlation differences, PRDC, StatisticalSimScore via `pymdma`, and a practical two-sample classifier test).
 
 Usage
------
+----
+You can either follow `template.py` instruction or these 5 steps.
 1. Place your CSV file in the project folder.  
 2. Change the filename in:
    `load_dataset("your_dataset.csv")`  
