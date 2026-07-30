@@ -129,3 +129,44 @@ def plot_corr_matrices(real_df: pd.DataFrame, syn_df: pd.DataFrame, method: str 
     axes[2].set_title(f"Δ correlazioni (Synth − Real) — {method.capitalize()}{title_suffix}")
     plt.tight_layout()
     plt.show()
+
+def two_sample_classifier_auc(
+    real_df: pd.DataFrame,
+    syn_df: pd.DataFrame,
+    test_size: float = 0.2,
+    random_state: int = 42,
+    n_estimators: int = 100,
+) -> float:
+    """Two-sample test via classifier AUC. Lower AUC (~0.5) => more realistic synthetic data."""
+    if len(real_df) == 0 or len(syn_df) == 0:
+        raise ValueError("real_df and syn_df must be non-empty")
+
+    # Merge datasets
+    X = pd.concat([real_df.reset_index(drop=True), syn_df.reset_index(drop=True)], ignore_index=True)
+    y = np.concatenate([np.zeros(len(real_df)), np.ones(len(syn_df))])
+
+    # Keep numeric columns only (try convert objects to numeric first)
+    for col in X.select_dtypes(include=[object]).columns:
+        try:
+            X[col] = pd.to_numeric(X[col])
+        except Exception:
+            X = X.drop(columns=[col])
+
+    X = X.select_dtypes(include=[np.number])  # ensure numeric-only
+
+    if X.shape[1] == 0:
+        raise ValueError("No numeric columns available for classification after dropping/conv.")
+
+    # If stratify would be invalid (very small groups), disable it
+    strat = y if (min(y.sum(), len(y) - y.sum()) >= 2) else None
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state, stratify=strat
+    )
+
+    clf = RandomForestClassifier(n_estimators=n_estimators, random_state=random_state, n_jobs=-1)
+    clf.fit(X_train, y_train)
+
+    probs = clf.predict_proba(X_test)[:, 1]
+    auc = float(roc_auc_score(y_test, probs))
+    return auc
