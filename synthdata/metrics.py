@@ -129,28 +129,3 @@ def plot_corr_matrices(real_df: pd.DataFrame, syn_df: pd.DataFrame, method: str 
     axes[2].set_title(f"Δ correlazioni (Synth − Real) — {method.capitalize()}{title_suffix}")
     plt.tight_layout()
     plt.show()
-
-
-def two_sample_classifier_auc(real_df: pd.DataFrame, syn_df: pd.DataFrame, random_state: int = 42, test_size: float = 0.3) -> float:
-    """
-    Practical two-sample test: train a classifier to distinguish real from synthetic and return AUC.
-
-    Interpretation:
-      - AUC close to 0.5 -> classifier can't distinguish (good)
-      - AUC >> 0.5 -> synthetic data are distinguishable from real (bad)
-    Caveats:
-      - This is heuristic, depends on classifier choice and hyperparameters.
-      - Use cross-validation or repeated runs for robust estimates.
-    """
-    # Build dataset
-    X_real = real_df.values
-    X_syn = syn_df.values
-    X = np.vstack([X_real, X_syn])
-    y = np.hstack([np.zeros(X_real.shape[0], dtype=int), np.ones(X_syn.shape[0], dtype=int)])
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state, stratify=y)
-    clf = RandomForestClassifier(n_estimators=100, random_state=random_state, n_jobs=-1)
-    clf.fit(X_train, y_train)
-    probs = clf.predict_proba(X_test)[:, 1]
-    auc = float(roc_auc_score(y_test, probs))
-    return auc

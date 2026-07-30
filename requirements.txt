@@ -7,3 +7,4 @@ seaborn>=0.11
 ucimlrepo>=0.1
 pymdma>=0.1
 streamlit>=1.0  # optional for the web app
+joblib>=1.1
