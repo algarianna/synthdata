@@ -2,6 +2,15 @@
 
 synthdata è un piccolo package per generare dati sintetici tabellari usando una Gaussian copula, con un set di metriche di valutazione (KS/Wasserstein, differenze di correlazione, PRDC, StatisticalSimScore via `pymdma`, e un test pratico two-sample basato su classificatore).
 
+1. Place your CSV file in the project folder.
+2. Change the filename in:
+       load_dataset("your_dataset.csv")
+3. Replace the column names in `columns_to_keep` with the columns you want to synthesize.
+4. Run:
+       python template_run.py
+5. The synthetic dataset will be saved as:
+       synthetic_dataset.csv
+
 Questo repository fornisce:
 - un package Python `synthdata` con moduli separati (I/O, modello, metriche, utilità),
 - una classe `GaussianCopula` con `fit`, `sample`, `save`, `load`,
@@ -98,12 +107,3 @@ Licenza
 -------
 Aggiungi un file `LICENSE` (es. MIT) nella root del progetto se vuoi dichiarare esplicitamente la licenza del progetto.
 
-Contatti
---------
-Se vuoi che io generi anche:
-- `pyproject.toml` / `setup.cfg` già forniti (ok),
-- file `LICENSE` (es. MIT) e relative intestazioni,
-- notebook di esempio più dettagliato,
-- implementazione dell'algoritmo di Higham per nearest correlation matrix,
-
-dimmi quale preferisci che aggiunga e procedo.
