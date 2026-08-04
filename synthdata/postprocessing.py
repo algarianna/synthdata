@@ -3,7 +3,7 @@ from typing import Optional, Dict
 import numpy as np
 import pandas as pd
 from pandas.api import types as pdt
-from synthdata.utils.precision import match_numeric_precision
+from synthdata.utils import match_numeric_precision
 
 
 def convert_synthetic_types(
